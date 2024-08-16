@@ -1,37 +1,37 @@
-const express = require("express");
-const net = require("net");
+const express = require('express');
+const bodyParser = require('body-parser');
+const net = require('net');
+
 const app = express();
+app.use(bodyParser.json());
+let lastTcpResponse = "";
 
-app.use(express.json());
+app.post('/sendToTcp', (req, res) => {
+    const serverInfo = req.body.server.split(':');
+    const serverIp = serverInfo[0];
+    const serverPort = parseInt(serverInfo[1], 10);
+    const dataToSend = req.body.info;
 
-// Rota HTTPS para receber requisições do Roblox
-app.post("/api/handle", (req, res) => {
-  const playerData = req.body;
+    const tcpClient = new net.Socket();
 
-  // Conectar ao servidor TCP/IP
-  const client = new net.Socket();
-  client.connect(12345, "127.0.0.1", function () {
-    console.log("Conectado ao servidor TCP");
-    client.write(JSON.stringify(playerData));
-  });
+    tcpClient.connect(serverPort, serverIp, () => {
+        tcpClient.write(dataToSend);
+    });
 
-  client.on("data", function (data) {
-    // Enviar resposta de volta para Roblox
-    res.json({ message: "Resposta do servidor", data: data.toString() });
-    client.destroy(); // Fechar conexão TCP
-  });
+    tcpClient.on('data', (data) => {
+        lastTcpResponse = data.toString(); // Armazena a última resposta do TCP
+        console.log('Resposta do servidor TCP:', lastTcpResponse);
+        res.json({ status: 'Data sent to TCP', response: lastTcpResponse });
+        tcpClient.destroy();
+    });
 
-  client.on("close", function () {
-    console.log("Conexão TCP fechada");
-  });
-
-  client.on("error", function (err) {
-    console.error("Erro na conexão TCP:", err);
-    res.status(500).send("Erro na comunicação com o servidor.");
-  });
+    tcpClient.on('error', (err) => {
+        console.error('Erro ao conectar ao TCP:', err.message);
+        res.status(500).json({ status: 'Error', message: err.message });
+    });
 });
 
-// Servidor rodando na porta 3000
-app.listen(3000, () => {
-  console.log("Servidor HTTPS escutando na porta 3000");
+// Endpoint para o Roblox pegar a última resposta do TCP
+app.get('/getTcpResponse', (req, res) => {
+    res.json({ response: lastTcpResponse });
 });
