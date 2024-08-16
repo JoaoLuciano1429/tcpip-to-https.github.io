@@ -1,16 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const net = require('net');
+const atob = require('atob'); // para decodificar base64
 
 const app = express();
 app.use(bodyParser.json());
-let lastTcpResponse = "";
 
 app.post('/sendToTcp', (req, res) => {
     const serverInfo = req.body.server.split(':');
     const serverIp = serverInfo[0];
     const serverPort = parseInt(serverInfo[1], 10);
-    const dataToSend = req.body.info;
+    const dataToSend = Buffer.from(atob(req.body.info), 'binary'); // Decodifica base64 para binário
 
     const tcpClient = new net.Socket();
 
@@ -19,9 +19,8 @@ app.post('/sendToTcp', (req, res) => {
     });
 
     tcpClient.on('data', (data) => {
-        lastTcpResponse = data.toString(); // Armazena a última resposta do TCP
-        console.log('Resposta do servidor TCP:', lastTcpResponse);
-        res.json({ status: 'Data sent to TCP', response: lastTcpResponse });
+        console.log('Resposta do servidor TCP:', data.toString());
+        res.json({ status: 'Data sent to TCP', response: data.toString() });
         tcpClient.destroy();
     });
 
@@ -31,7 +30,6 @@ app.post('/sendToTcp', (req, res) => {
     });
 });
 
-// Endpoint para o Roblox pegar a última resposta do TCP
-app.get('/getTcpResponse', (req, res) => {
-    res.json({ response: lastTcpResponse });
+app.listen(3000, () => {
+    console.log('Servidor HTTP escutando na porta 3000');
 });
