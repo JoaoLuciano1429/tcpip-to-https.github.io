@@ -1,0 +1,28 @@
+{
+  "name": "tcpip-to-https.github.io",
+  "version": "1.0.0",
+  "description": "Projeto para Roblox",
+  "main": "index.html",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoaoLuciano1429/tcpip-to-https.github.io.git"
+  },
+  "keywords": [
+    "TCP",
+    "IP",
+    "HTTPS"
+  ],
+  "author": "JoaoLuciano1429, AxN3-BiancaSilva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JoaoLuciano1429/tcpip-to-https.github.io/issues"
+  },
+  "homepage": "https://github.com/JoaoLuciano1429/tcpip-to-https.github.io#readme",
+  "dependencies": {
+    "net": "^1.0.2",
+    "atob": "^2.1.2"
+  }
+}
